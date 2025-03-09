@@ -1,10 +1,26 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
     <title>Личный кабинет</title>
 </head>
 <body>
-    <h1>Добро пожаловать в личный кабинет, {{ user.username }}!</h1>
-    <p>Здесь вы можете управлять своими данными.</p>
+    <h1>Добро пожаловать, {{ user.username }}!</h1>
+    <p>Это ваш личный кабинет.</p>
+    
+    <!-- Кнопка выхода -->
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Выйти</button>
+    </form>
+
+    <!-- Отображение сообщений -->
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 </body>
 </html>
