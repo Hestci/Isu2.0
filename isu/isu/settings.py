@@ -129,16 +129,11 @@ LOGIN_REDIRECT_URL = 'lk'  # Имя маршрута для перенаправ
 
 DATABASES = {
     'default': {
-<<<<<<< HEAD
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'mydatabase',
         'USER': 'user',
         'PASSWORD': 'password',
         'HOST': 'db',  
         'PORT': '5432',
-=======
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
->>>>>>> adcfc697ebbf3c11ce665fc3840aa9ac182bdf1b
     }
 }
