@@ -48,6 +48,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'myapp.middleware.LoggingMiddleware',
 ]
 
 ROOT_URLCONF = 'isu.urls'
@@ -131,3 +132,25 @@ LOGIN_REDIRECT_URL = 'home'  # Укажите имя URL-адреса для п�
 LOGOUT_REDIRECT_URL = 'home'  # Укажите имя URL-адреса для перенаправления после выхода
 LOGIN_REDIRECT_URL = 'lk'  # Имя маршрута для перенаправления после входа
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message} {ip}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
+}
