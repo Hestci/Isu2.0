@@ -137,7 +137,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '{levelname} {asctime} {module} {message} {ip}',
+            'format': '{levelname} {asctime} {module} {message} IP: {ip} Path: {path}',
             'style': '{',
         },
     },
@@ -145,12 +145,20 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
+            'filters': ['add_request_info'],  # Добавляем фильтр
+        },
+    },
+    'filters': {
+        'add_request_info': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': lambda record: hasattr(record, 'ip') and hasattr(record, 'path'),  # Проверяем наличие полей
         },
     },
     'loggers': {
         'django': {
             'handlers': ['console'],
             'level': 'INFO',
+            'propagate': True,
         },
     },
 }
