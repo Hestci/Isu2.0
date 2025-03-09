@@ -76,8 +76,12 @@ WSGI_APPLICATION = 'isu.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'mydatabase',
+        'USER': 'user',
+        'PASSWORD': 'password',
+        'HOST': 'db',  
+        'PORT': '5432',
     }
 }
 
@@ -127,13 +131,3 @@ LOGIN_REDIRECT_URL = 'home'  # Укажите имя URL-адреса для п�
 LOGOUT_REDIRECT_URL = 'home'  # Укажите имя URL-адреса для перенаправления после выхода
 LOGIN_REDIRECT_URL = 'lk'  # Имя маршрута для перенаправления после входа
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mydatabase',
-        'USER': 'user',
-        'PASSWORD': 'password',
-        'HOST': 'db',  
-        'PORT': '5432',
-    }
-}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Управление ролями</title>
+</head>
+<body>
+    <h1>Управление ролями пользователей</h1>
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <table>
+        <tr>
+            <th>Пользователь</th>
+            <th>Текущая роль</th>
+            <th>Изменить роль</th>
+        </tr>
+        {% for profile in users %}
+        <tr>
+            <td>{{ profile.user.username }}</td>
+            <td>{{ profile.role }}</td>
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="user_id" value="{{ profile.user.id }}">
+                    <select name="role">
+                        <option value="student" {% if profile.role == 'student' %}selected{% endif %}>Студент</option>
+                        <option value="teacher" {% if profile.role == 'teacher' %}selected{% endif %}>Преподаватель</option>
+                        <option value="admin" {% if profile.role == 'admin' %}selected{% endif %}>Админ</option>
+                    </select>
+                    <button type="submit">Сохранить</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p><a href="{% url 'lk' %}">Вернуться в личный кабинет</a></p>
+</body>
+</html>

@@ -6,15 +6,14 @@
 </head>
 <body>
     <h1>Добро пожаловать, {{ user.username }}!</h1>
-    <p>Это ваш личный кабинет.</p>
-    
-    <!-- Кнопка выхода -->
+    <p>Ваша роль: {{ user.profile.role }}</p>
+    {% if user.profile.role == 'admin' %}
+        <p><a href="{% url 'manage_roles' %}">Управление ролями</a></p>
+    {% endif %}
     <form method="post" action="{% url 'logout' %}">
         {% csrf_token %}
         <button type="submit">Выйти</button>
     </form>
-
-    <!-- Отображение сообщений -->
     {% if messages %}
         <ul>
             {% for message in messages %}

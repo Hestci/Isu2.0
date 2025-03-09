@@ -10,6 +10,7 @@ urlpatterns = [
     path('login/', views.user_login, name='login'),  # Оставьте этот маршрут для явного доступа к странице входа
     path('logout/', views.user_logout, name='logout'),  # Новый маршрут
     path('unauthorized/', views.unauthorized, name='unauthorized'),
+    path('manage-roles/', views.manage_roles, name='manage_roles'),  # Новый маршрут
 ]
 
 
