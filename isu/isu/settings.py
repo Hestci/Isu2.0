@@ -44,7 +44,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Добавляем WhiteNoise для статических файлов
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',  # Временно отключаем WhiteNoise
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -132,8 +132,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'myapp/static'),
 ]
 
-# Добавим настройку для обслуживания статических файлов в Django
-WHITENOISE_USE_FINDERS = True
+# Временно отключаем настройку для WhiteNoise
+# WHITENOISE_USE_FINDERS = True
 
 # Media files
 MEDIA_URL = '/media/'
