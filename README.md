@@ -29,7 +29,7 @@
 
 1. Клонируйте репозиторий:
 ```bash
-git clone https://github.com/your-username/isu2.0.git
+git clone https://github.com/Hestci/isu2.0.git
 cd isu2.0
 ```
 
