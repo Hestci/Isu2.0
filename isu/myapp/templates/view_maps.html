@@ -7,10 +7,63 @@
     <h1 class="mb-4">Планы корпусов</h1>
     <div class="list-group">
         {% for pdf in pdf_files %}
-            <a href="/static/maps/{{ pdf }}" target="_blank" class="list-group-item list-group-item-action">
+            <a href="javascript:void(0);" onclick="openPdfModal('/static/maps/{{ pdf }}', '{{ pdf }}')" class="list-group-item list-group-item-action">
                 {{ pdf }}
             </a>
         {% endfor %}
     </div>
 </div>
+
+<!-- Модальное окно для отображения PDF -->
+<div class="modal fade" id="pdfModal" tabindex="-1" aria-labelledby="pdfModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pdfModalLabel">План корпуса</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <iframe id="pdfFrame" width="100%" height="600" frameborder="0"></iframe>
+            </div>
+            <div class="modal-footer">
+                <a id="pdfDownloadLink" href="#" target="_blank" class="btn btn-primary">Открыть в новой вкладке</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openPdfModal(pdfUrl, pdfName) {
+        // Устанавливаем URL в iframe
+        document.getElementById('pdfFrame').src = pdfUrl;
+        
+        // Устанавливаем заголовок модального окна
+        document.getElementById('pdfModalLabel').textContent = 'План корпуса: ' + pdfName;
+        
+        // Устанавливаем ссылку для скачивания
+        document.getElementById('pdfDownloadLink').href = pdfUrl;
+        
+        // Открываем модальное окно
+        try {
+            // Попытка использовать Bootstrap 5 API
+            var myModal = new bootstrap.Modal(document.getElementById('pdfModal'));
+            myModal.show();
+        } catch (e) {
+            console.error("Ошибка при открытии модального окна:", e);
+            // Резервный вариант для jQuery (если доступен)
+            try {
+                if (typeof jQuery !== 'undefined') {
+                    jQuery('#pdfModal').modal('show');
+                } else {
+                    // Если ничего не работает, открыть в новой вкладке
+                    window.open(pdfUrl, '_blank');
+                }
+            } catch (e2) {
+                console.error("Резервный метод тоже не сработал:", e2);
+                window.open(pdfUrl, '_blank');
+            }
+        }
+    }
+</script>
 {% endblock %} 
