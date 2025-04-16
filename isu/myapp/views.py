@@ -9,6 +9,7 @@ from .forms import RegisterForm, LoginForm, ProfileMainForm, ProfileContactForm,
 from .models import Profile, Role, Application, Vacancy, VacancyResponse
 import os
 from django.contrib.auth.forms import UserCreationForm
+from django.templatetags.static import static
 
 def has_roles(user, role_names=None):
     if not (user.is_authenticated and hasattr(user, 'profile') and user.profile.roles.exists()):
@@ -177,14 +178,14 @@ def view_maps(request):
         messages.warning(request, 'У вас нет назначенных ролей. Пожалуйста, обратитесь к администратору.')
         return render(request, 'unauthorized.html')
     
-    # Создаем полные URL для PDF файлов
+    # Создаем полные URL для PDF файлов с учетом настроек статических файлов
     pdf_files = ['A.pdf', 'B.pdf', 'Y.pdf']
     pdf_urls = []
     
     for pdf in pdf_files:
         pdf_urls.append({
             'name': pdf,
-            'url': f'/static/maps/{pdf}'
+            'url': static(f'maps/{pdf}')
         })
     
     return render(request, 'view_maps.html', {'pdf_files': pdf_urls})

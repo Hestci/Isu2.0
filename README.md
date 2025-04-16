@@ -62,6 +62,34 @@ docker compose exec web python manage.py makemigrations
 docker compose exec web python manage.py migrate
 ```
 
+6. Копирование PDF-файлов для просмотра карт:
+```bash
+# Создаем временную директорию в контейнере
+docker compose exec web mkdir -p /tmp/maps
+
+# Копируем PDF-файлы во временную директорию
+docker cp isu/myapp/static/maps/A.pdf имя_web_контейнера:/tmp/maps/
+docker cp isu/myapp/static/maps/B.pdf имя_web_контейнера:/tmp/maps/
+docker cp isu/myapp/static/maps/Y.pdf имя_web_контейнера:/tmp/maps/
+
+# Создаем директории для статических файлов
+docker compose exec web mkdir -p /app/myapp/static/maps
+docker compose exec web mkdir -p /app/staticfiles/maps
+
+# Копируем файлы в директории статических файлов
+docker compose exec web cp /tmp/maps/A.pdf /app/myapp/static/maps/
+docker compose exec web cp /tmp/maps/B.pdf /app/myapp/static/maps/
+docker compose exec web cp /tmp/maps/Y.pdf /app/myapp/static/maps/
+docker compose exec web cp /tmp/maps/A.pdf /app/staticfiles/maps/
+docker compose exec web cp /tmp/maps/B.pdf /app/staticfiles/maps/
+docker compose exec web cp /tmp/maps/Y.pdf /app/staticfiles/maps/
+
+# Перезапускаем сервер для применения изменений
+docker compose restart web
+```
+
+Примечание: имя_web_контейнера можно узнать с помощью команды `docker compose ps`. Обычно это что-то вроде "isu20-web-1" или "project_name-web-1".
+
 ## Структура проекта
 
 ```

@@ -24,7 +24,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             <div class="modal-body">
-                <iframe id="pdfFrame" width="100%" height="600" frameborder="0"></iframe>
+                <div id="pdfContainer" style="height: 600px; overflow: auto;"></div>
             </div>
             <div class="modal-footer">
                 <a id="pdfDownloadLink" href="#" target="_blank" class="btn btn-primary">Открыть в новой вкладке</a>
@@ -34,18 +34,59 @@
     </div>
 </div>
 
+<!-- Подключение PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+
 <script>
+    // Инициализация PDF.js
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+    
     function openPdfModal(pdfUrl, pdfName) {
         console.log("Открываем PDF:", pdfUrl); // Для отладки
-        
-        // Устанавливаем URL в iframe
-        document.getElementById('pdfFrame').src = pdfUrl;
         
         // Устанавливаем заголовок модального окна
         document.getElementById('pdfModalLabel').textContent = 'План корпуса: ' + pdfName;
         
         // Устанавливаем ссылку для скачивания
         document.getElementById('pdfDownloadLink').href = pdfUrl;
+        
+        // Очищаем контейнер для PDF
+        const container = document.getElementById('pdfContainer');
+        container.innerHTML = '';
+        
+        // Загружаем PDF через PDF.js
+        const loadingTask = pdfjsLib.getDocument(pdfUrl);
+        loadingTask.promise.then(function(pdf) {
+            console.log('PDF загружен');
+            
+            // Загружаем первую страницу
+            pdf.getPage(1).then(function(page) {
+                console.log('Страница загружена');
+                
+                const scale = 1.5;
+                const viewport = page.getViewport({ scale: scale });
+                
+                // Подготавливаем canvas
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                canvas.style.width = '100%';
+                canvas.style.height = 'auto';
+                container.appendChild(canvas);
+                
+                // Рендерим PDF страницу в canvas
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                
+                page.render(renderContext);
+            });
+        }).catch(function(error) {
+            console.error('Ошибка при загрузке PDF:', error);
+            container.innerHTML = '<div class="alert alert-danger">Ошибка при загрузке PDF. <a href="' + pdfUrl + '" target="_blank">Открыть в новой вкладке</a></div>';
+        });
         
         // Открываем модальное окно
         try {
