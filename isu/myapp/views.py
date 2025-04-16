@@ -176,8 +176,18 @@ def view_maps(request):
     if not has_roles(request.user):
         messages.warning(request, 'У вас нет назначенных ролей. Пожалуйста, обратитесь к администратору.')
         return render(request, 'unauthorized.html')
+    
+    # Создаем полные URL для PDF файлов
     pdf_files = ['A.pdf', 'B.pdf', 'Y.pdf']
-    return render(request, 'view_maps.html', {'pdf_files': pdf_files})
+    pdf_urls = []
+    
+    for pdf in pdf_files:
+        pdf_urls.append({
+            'name': pdf,
+            'url': f'/static/maps/{pdf}'
+        })
+    
+    return render(request, 'view_maps.html', {'pdf_files': pdf_urls})
 
 @login_required(login_url='/login/')
 def about_university(request):

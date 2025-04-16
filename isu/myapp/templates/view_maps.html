@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Планы корпусов{% endblock %}
 
@@ -7,9 +8,9 @@
     <h1 class="mb-4">Планы корпусов</h1>
     <div class="list-group">
         {% for pdf in pdf_files %}
-            <a href="javascript:void(0);" onclick="openPdfModal('/static/maps/{{ pdf }}', '{{ pdf }}')" class="list-group-item list-group-item-action">
-                {{ pdf }}
-            </a>
+            <button onclick="openPdfModal('{{ pdf.url }}', '{{ pdf.name }}')" class="list-group-item list-group-item-action">
+                {{ pdf.name }}
+            </button>
         {% endfor %}
     </div>
 </div>
@@ -35,6 +36,8 @@
 
 <script>
     function openPdfModal(pdfUrl, pdfName) {
+        console.log("Открываем PDF:", pdfUrl); // Для отладки
+        
         // Устанавливаем URL в iframe
         document.getElementById('pdfFrame').src = pdfUrl;
         
