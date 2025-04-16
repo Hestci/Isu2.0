@@ -1,4 +1,4 @@
-from .models import Profile
+from ..models import Profile
 
 def user_roles(request):
     if request.user.is_authenticated and hasattr(request.user, 'profile'):
