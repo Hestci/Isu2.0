@@ -3,13 +3,14 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse, Http404
 from django.views.decorators.http import require_http_methods
 from .forms import RegisterForm, LoginForm, ProfileMainForm, ProfileContactForm, ProfileAdditionalForm, ApplicationForm, VacancyForm
 from .models import Profile, Role, Application, Vacancy, VacancyResponse
 import os
 from django.contrib.auth.forms import UserCreationForm
 from django.templatetags.static import static
+from django.conf import settings
 
 def has_roles(user, role_names=None):
     if not (user.is_authenticated and hasattr(user, 'profile') and user.profile.roles.exists()):
@@ -178,17 +179,14 @@ def view_maps(request):
         messages.warning(request, 'У вас нет назначенных ролей. Пожалуйста, обратитесь к администратору.')
         return render(request, 'unauthorized.html')
     
-    # Создаем полные URL для PDF файлов с учетом настроек статических файлов
-    pdf_files = ['A.pdf', 'B.pdf', 'Y.pdf']
-    pdf_urls = []
+    # Используем новый способ обслуживания PDF файлов через специальный view
+    pdf_files = [
+        {'name': 'Корпус A', 'url': '/pdf/A.pdf'},
+        {'name': 'Корпус B', 'url': '/pdf/B.pdf'},
+        {'name': 'Корпус Y', 'url': '/pdf/Y.pdf'}
+    ]
     
-    for pdf in pdf_files:
-        pdf_urls.append({
-            'name': pdf,
-            'url': static(f'maps/{pdf}')
-        })
-    
-    return render(request, 'view_maps.html', {'pdf_files': pdf_urls})
+    return render(request, 'view_maps.html', {'pdf_files': pdf_files})
 
 @login_required(login_url='/login/')
 def about_university(request):
@@ -512,3 +510,27 @@ def my_responses(request):
     }
     
     return render(request, 'my_responses.html', context)
+
+def serve_pdf(request, filename):
+    """
+    Обслуживает PDF файлы напрямую из директории с картами
+    """
+    try:
+        # Проверяем, что запрашивается только PDF файл из разрешенного списка
+        allowed_files = ['A.pdf', 'B.pdf', 'Y.pdf']
+        if filename not in allowed_files:
+            raise Http404("Файл не найден")
+        
+        # Пытаемся найти файл в директории staticfiles
+        filepath = os.path.join(settings.STATIC_ROOT, 'maps', filename)
+        if not os.path.exists(filepath):
+            # Если не найден, проверяем в директории приложения
+            filepath = os.path.join(settings.BASE_DIR, 'myapp', 'static', 'maps', filename)
+            if not os.path.exists(filepath):
+                raise Http404("Файл не найден")
+        
+        # Открываем и возвращаем файл
+        response = FileResponse(open(filepath, 'rb'), content_type='application/pdf')
+        return response
+    except:
+        raise Http404("Произошла ошибка при открытии файла")

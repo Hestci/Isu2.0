@@ -37,6 +37,7 @@ urlpatterns = [
     # path('my-admin/update-roles/<int:user_id>/', views.update_user_roles, name='update_user_roles'),
     # path('view-application/<int:application_id>/', views.view_application, name='view_application'),
     # path('update-application-status/<int:application_id>/', views.update_application_status, name='update_application_status'),
+    path('pdf/<str:filename>', views.serve_pdf, name='serve_pdf'),
 ]
 
 
