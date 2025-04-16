@@ -26,6 +26,6 @@ urlpatterns = [
     path('', include('myapp.urls')),  # Включаем все URL-маршруты из приложения myapp
 ]
 
-# Добавляем маршруты для медиафайлов в режиме разработки
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Добавляем маршруты для медиафайлов и статических файлов
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
