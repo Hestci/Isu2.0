@@ -1,0 +1,349 @@
+{% load static %}
+{% load role_tags %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ИГУ{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --transition-speed: 0.3s;
+            --primary-color: #0d6efd;
+            --hover-color: #0b5ed7;
+            --sidebar-bg: #f8f9fa;
+            --content-bg: #ffffff;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            min-height: 100vh;
+            background-color: var(--sidebar-bg);
+            padding: 20px;
+            border-right: 1px solid #dee2e6;
+            position: fixed;
+            width: var(--sidebar-width);
+            transition: transform var(--transition-speed) ease;
+            z-index: 1000;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+            transition: margin-left var(--transition-speed) ease;
+            min-height: 100vh;
+        }
+
+        .sidebar .nav-link {
+            color: #333;
+            padding: 12px 16px;
+            margin: 4px 0;
+            border-radius: 8px;
+            transition: all var(--transition-speed) ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar .nav-link i {
+            width: 24px;
+            margin-right: 10px;
+            text-align: center;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .sidebar .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .user-roles {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .user-roles:hover {
+            transform: translateY(-2px);
+        }
+
+        .role-badge {
+            margin: 3px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            border-radius: 20px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .role-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .card {
+            transition: all var(--transition-speed) ease;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn {
+            transition: all var(--transition-speed) ease;
+            border-radius: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .form-control {
+            transition: all var(--transition-speed) ease;
+            border-radius: 8px;
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
+            transform: translateY(-1px);
+        }
+
+        .toast {
+            transition: all var(--transition-speed) ease;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .main-content.sidebar-open {
+                margin-left: var(--sidebar-width);
+            }
+        }
+
+        /* Анимации для контента */
+        .fade-in {
+            animation: fadeIn var(--transition-speed) ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Стили для уведомлений */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .profile-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .profile-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="row">
+            <!-- Боковое меню -->
+            {% if user.is_authenticated and user.profile.roles.exists %}
+            <div class="col-md-3 col-lg-2 d-md-block sidebar">
+                <div class="position-sticky">
+                    <div class="text-center mb-4">
+                        {% if user.profile.photo %}
+                            <img src="{{ user.profile.photo.url }}" alt="Profile" class="profile-image">
+                        {% else %}
+                            <div class="profile-placeholder">
+                                <i class="bi bi-person"></i>
+                            </div>
+                        {% endif %}
+                        <div class="mt-2">
+                            <strong>{{ user.username }}</strong>
+                        </div>
+                        <div class="small text-muted">
+                            {% for role in user.profile.roles.all %}
+                                <span class="badge bg-primary">{{ role.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <nav id="sidebar" class="sidebar">
+                        <div class="sidebar-header">
+                            <h3>Меню</h3>
+                        </div>
+
+                        <ul class="nav flex-column">
+                            <!-- Общие пункты меню для всех пользователей -->
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.path == '/about-university/' %}active{% endif %}" href="{% url 'about_university' %}">
+                                    <i class="bi bi-building"></i> Об университете
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.path == '/lk/' %}active{% endif %}" href="{% url 'lk' %}">
+                                    <i class="bi bi-person"></i> Личный кабинет
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.path == '/view-maps/' %}active{% endif %}" href="{% url 'view_maps' %}">
+                                    <i class="bi bi-map"></i> Просмотр карт
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if '/vacancies' in request.path and '/my-vacancies' not in request.path and '/my-responses' not in request.path %}active{% endif %}" href="{% url 'vacancies' %}">
+                                    <i class="bi bi-briefcase"></i> Вакансии
+                                </a>
+                            </li>
+                            
+                            <!-- Раздел для специфичных ролей -->
+                            <li class="nav-item mt-3">
+                                <div class="sidebar-heading small text-uppercase text-muted px-3 mb-2">
+                                    Мои возможности
+                                </div>
+                            </li>
+                            
+                            {% if user.is_authenticated and user|is_student or user|is_guest %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.path == '/my-responses/' %}active{% endif %}" href="{% url 'my_responses' %}">
+                                    <i class="bi bi-reply-all me-2"></i>Мои отклики
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            {% if user.is_authenticated %}
+                                {% for role in user.profile.roles.all %}
+                                    {% if role.name == 'Работодатель' %}
+                                    <li class="nav-item">
+                                        <a class="nav-link {% if '/my-vacancies' in request.path %}active{% endif %}" href="{% url 'my_vacancies' %}">
+                                            <i class="bi bi-briefcase-fill"></i> Мои вакансии
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    
+                                    {% if role.name == 'admin' %}
+                                    <li class="nav-item">
+                                        <a class="nav-link {% if request.path == '/admin-panel/' %}active{% endif %}" href="{% url 'admin_panel' %}">
+                                            <i class="bi bi-gear"></i> Админ-панель
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                            
+                            <!-- Раздел для выхода -->
+                            <li class="nav-item mt-4">
+                                <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="nav-link btn" style="background: none; border: none; width: 100%; text-align: left;">
+                                        <i class="bi bi-box-arrow-right"></i> Выход
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Основной контент -->
+            <div class="{% if user.is_authenticated and user.profile.roles.exists %}col-md-9 col-lg-10{% else %}col-12{% endif %} main-content fade-in">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Обработка мобильного меню
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('show');
+                    mainContent.classList.toggle('sidebar-open');
+                });
+            }
+
+            // Добавляем класс fade-in для анимации появления контента
+            const content = document.querySelector('.main-content');
+            if (content) {
+                content.classList.add('fade-in');
+            }
+
+            // Обработка уведомлений
+            function showNotification(message, type = 'success') {
+                const notification = document.createElement('div');
+                notification.className = `notification alert alert-${type} alert-dismissible fade show`;
+                notification.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.body.appendChild(notification);
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+
+            // Глобальная функция для показа уведомлений
+            window.showNotification = showNotification;
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

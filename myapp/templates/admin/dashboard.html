@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Административная панель</h2>
+    
+    <div class="row mt-4">
+        {% if user.has_role('user_manager') or user.has_role('admin') %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Управление пользователями</h5>
+                    <p class="card-text">Управление пользователями и их ролями</p>
+                    <a href="{% url 'manage_roles' %}" class="btn btn-primary">Перейти</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if user.has_role('application_manager') or user.has_role('admin') %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Управление заявками</h5>
+                    <p class="card-text">Просмотр и обработка заявок на обучение</p>
+                    <a href="{% url 'manage_applications' %}" class="btn btn-primary">Перейти</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if user.has_role('vacancy_manager') or user.has_role('admin') %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Управление вакансиями</h5>
+                    <p class="card-text">Модерация и управление вакансиями</p>
+                    <a href="{% url 'manage_vacancies' %}" class="btn btn-primary">Перейти</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

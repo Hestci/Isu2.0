@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Планы корпусов{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Планы корпусов</h1>
+    <div class="list-group">
+        {% for pdf in pdf_files %}
+            <a href="/static/maps/{{ pdf }}" target="_blank" class="list-group-item list-group-item-action">
+                {{ pdf }}
+            </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

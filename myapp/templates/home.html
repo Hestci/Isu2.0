@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Главная страница{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Добро пожаловать, {{ user.username }}!</h3>
+                </div>
+                <div class="card-body">
+                    <h5>Ваши роли:</h5>
+                    <ul class="list-group">
+                        {% for role in user.profile.roles.all %}
+                            <li class="list-group-item">{{ role.name }} - {{ role.description }}</li>
+                        {% empty %}
+                            <li class="list-group-item">У вас нет назначенных ролей</li>
+                        {% endfor %}
+                    </ul>
+                    
+                    {% if user.has_role('admin') or user.has_role('user_manager') or user.has_role('application_manager') or user.has_role('vacancy_manager') %}
+                        <div class="admin-panel my-4">
+                            <h2>Панель администратора</h2>
+                            <div class="list-group">
+                                {% if user.has_role('admin') or user.has_role('user_manager') %}
+                                    <a href="{% url 'manage_roles' %}" class="list-group-item list-group-item-action">
+                                        <i class="fas fa-users me-2"></i> Управление ролями пользователей
+                                    </a>
+                                {% endif %}
+                                {% if user.has_role('admin') or user.has_role('application_manager') %}
+                                    <a href="{% url 'manage_applications' %}" class="list-group-item list-group-item-action">
+                                        <i class="fas fa-clipboard-list me-2"></i> Управление заявками
+                                    </a>
+                                {% endif %}
+                                {% if user.has_role('admin') or user.has_role('vacancy_manager') %}
+                                    <a href="{% url 'manage_vacancies' %}" class="list-group-item list-group-item-action">
+                                        <i class="fas fa-briefcase me-2"></i> Управление вакансиями
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,492 @@
+{% extends 'base.html' %}
+{% load role_tags %}
+
+{% block title %}Личный кабинет{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-user-circle me-2"></i>Информация о пользователе</h5>
+                    <span class="badge bg-light text-primary">{{ user.profile.roles.all|length }} ролей</span>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3 text-center">
+                            <div class="profile-photo-container mb-3">
+                                {% if user.profile.photo %}
+                                    <img src="{{ user.profile.photo.url }}" alt="Фото профиля" class="img-thumbnail rounded-circle profile-photo">
+                                {% else %}
+                                    <div class="profile-placeholder">
+                                        <i class="fas fa-user-circle fa-5x text-muted"></i>
+                                        <p class="text-muted mt-2">Фото не загружено</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <h4 class="mb-3">Добро пожаловать, <span class="text-primary">{{ user.username }}</span>!</h4>
+                            <div class="roles-container mb-3">
+                                {% for role in user.profile.roles.all %}
+                                    <span class="role-badge {{ role.name|lower }}">
+                                        <i class="fas fa-user-tag"></i>{{ role.name }}
+                                    </span>
+                                {% empty %}
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-circle me-2"></i>Роли не назначены
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if not user|is_student and not user|is_admin %}
+                            <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#applicationModal">
+                                <i class="fas fa-graduation-cap me-2"></i>Подать заявку на обучение
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Блок для студентов и гостей -->
+    {% if user|is_student or user|is_guest %}
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>Управление заявлениями</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if user|is_student %}
+                        <!-- Карточка "Подать заявление" удалена -->
+                        {% endif %}
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-primary">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-briefcase fa-3x text-primary mb-3"></i>
+                                    <h5 class="card-title">Вакансии</h5>
+                                    <p class="card-text">Посмотрите доступные вакансии и откликнитесь на них</p>
+                                    <a href="{% url 'vacancies' %}" class="btn btn-primary">
+                                        <i class="fas fa-search me-2"></i>Найти вакансии
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-info">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-reply-all fa-3x text-info mb-3"></i>
+                                    <h5 class="card-title">Мои отклики</h5>
+                                    <p class="card-text">Просмотрите историю ваших откликов на вакансии</p>
+                                    <a href="{% url 'my_responses' %}" class="btn btn-info text-white">
+                                        <i class="fas fa-clipboard-list me-2"></i>Просмотреть отклики
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Модальное окно для подачи заявки -->
+    <div class="modal fade" id="applicationModal" tabindex="-1" aria-labelledby="applicationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="applicationModalLabel">Подача заявки на обучение</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="applicationForm" method="post" enctype="multipart/form-data" onsubmit="return submitApplication(event)">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="application_form">
+                        <div class="mb-3">
+                            <label for="id_document" class="form-label">Прикрепите документ (PDF)</label>
+                            <input type="file" class="form-control" id="id_document" name="document" accept=".pdf" required>
+                            <div class="form-text">Пожалуйста, прикрепите PDF-файл с вашими документами</div>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            В заявку будут автоматически включены данные из раздела "Основные данные"
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="submitApplicationBtn">
+                            <i class="fas fa-paper-plane me-2"></i>Отправить заявку
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-id-card me-2"></i>Основные данные</h5>
+                </div>
+                <div class="card-body">
+                    <form id="mainForm" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="main_form">
+                        <div class="row">
+                            {% for field in main_form %}
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Сохранить
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-address-book me-2"></i>Контактная информация</h5>
+                </div>
+                <div class="card-body">
+                    <form id="contactForm" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="contact_form">
+                        <div class="mb-3">
+                            <label for="id_photo" class="form-label">Фото профиля</label>
+                            <div class="input-group">
+                                <input type="file" class="form-control" id="id_photo" name="photo" accept="image/*">
+                                <label class="input-group-text" for="id_photo">
+                                    <i class="fas fa-camera"></i>
+                                </label>
+                            </div>
+                            {% if user.profile.photo %}
+                                <div class="mt-3 text-center">
+                                    <img src="{{ user.profile.photo.url }}" alt="Текущее фото" class="img-thumbnail rounded" style="max-width: 200px;">
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ contact_form.phone.id_for_label }}" class="form-label">Телефон</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                {{ contact_form.phone }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ contact_form.address.id_for_label }}" class="form-label">Адрес</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                {{ contact_form.address }}
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Сохранить
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Дополнительная информация</h5>
+                </div>
+                <div class="card-body">
+                    <form id="additionalForm" method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="additional_form">
+                        <div class="row">
+                            {% for field in additional_form %}
+                            <div class="col-12 mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Сохранить
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-photo-container {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+}
+
+.profile-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.profile-photo:hover {
+    transform: scale(1.05);
+}
+
+.profile-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #f8f9fa;
+    border-radius: 50%;
+}
+
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.badge {
+  --bs-badge-padding-x: 0.65em;
+  --bs-badge-padding-y: 0.35em;
+  --bs-badge-font-size: 0.75em;
+  --bs-badge-font-weight: 700;
+  --bs-badge-color: #fff;
+  --bs-badge-border-radius: var(--bs-border-radius);
+  display: inline-block;
+  padding: var(--bs-badge-padding-y) var(--bs-badge-padding-x);
+  font-size: var(--bs-badge-font-size);
+  font-weight: var(--bs-badge-font-weight);
+  line-height: 1;
+  color: var(--bs-badge-color);
+  text-align: center;
+  white-space:
+nowrap;
+  vertical-align: baseline;
+  border-radius: var(--bs-badge-border-radius);
+}
+
+.btn-primary {
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,123,255,.3);
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-right: none;
+}
+
+.form-control {
+    border-left: none;
+}
+
+.form-control:focus {
+    border-color: #ced4da;
+    box-shadow: none;
+}
+
+.form-control:focus + .input-group-text {
+    border-color: #80bdff;
+}
+
+.roles-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 15px;
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.05);
+    border: 0.5px solid rgba(0, 123, 255, 0.15);
+    transition: all 0.2s ease;
+    font-weight: 500;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.role-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 123, 255, 0.3);
+}
+
+.role-badge i {
+    margin-right: 6px;
+    color: #007bff;
+    font-size: 0.85rem;
+}
+
+.role-badge.admin {
+    background: linear-gradient(145deg, #fff8e1, #fff3e0);
+    color: #ff8f00;
+    border-color: rgba(255, 143, 0, 0.2);
+}
+
+.role-badge.student {
+    background: linear-gradient(145deg, #e8f5e9, #e6f7e6);
+    color: #2e7d32;
+    border-color: rgba(46, 125, 50, 0.2);
+}
+
+.role-badge.работодатель {
+    background: linear-gradient(145deg, #e3f2fd, #e1f0fd);
+    color: #1565c0;
+    border-color: rgba(21, 101, 192, 0.2);
+}
+</style>
+
+{% block extra_js %}
+<script>
+function submitApplication(event) {
+    event.preventDefault();
+    
+    // Отключаем кнопку отправки
+    const submitBtn = document.getElementById('submitApplicationBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Отправка...';
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    // Удаляем предыдущие сообщения об ошибках
+    const previousAlerts = form.querySelectorAll('.alert');
+    previousAlerts.forEach(alert => alert.remove());
+    
+    fetch('{% url "submit_application" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Показываем сообщение об успехе
+            const modal = bootstrap.Modal.getInstance(document.getElementById('applicationModal'));
+            modal.hide();
+            
+            // Показываем уведомление
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show';
+            alertDiv.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>Заявка успешно отправлена
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
+            
+            // Перезагружаем страницу через 2 секунды
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            // Показываем ошибки
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger';
+            
+            // Если есть конкретные ошибки по полям формы
+            if (data.errors) {
+                const errorList = document.createElement('ul');
+                errorList.className = 'mb-0 ps-3';
+                
+                // Выделяем поля с ошибками
+                Object.entries(data.errors).forEach(([field, message]) => {
+                    const fieldElement = document.getElementById(`id_${field}`);
+                    if (fieldElement) {
+                        fieldElement.classList.add('is-invalid');
+                        
+                        // Создаем сообщение об ошибке под полем
+                        const feedbackElement = document.createElement('div');
+                        feedbackElement.className = 'invalid-feedback';
+                        feedbackElement.textContent = message;
+                        
+                        // Если у поля уже есть сообщение об ошибке, заменяем его
+                        const existingFeedback = fieldElement.parentElement.querySelector('.invalid-feedback');
+                        if (existingFeedback) {
+                            existingFeedback.textContent = message;
+                        } else {
+                            fieldElement.parentElement.appendChild(feedbackElement);
+                        }
+                    }
+                    
+                    const errorItem = document.createElement('li');
+                    errorItem.innerHTML = message;
+                    errorList.appendChild(errorItem);
+                });
+                
+                alertDiv.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>Пожалуйста, исправьте следующие ошибки:`;
+                alertDiv.appendChild(errorList);
+            } else if (data.message) {
+                // Если есть общее сообщение об ошибке
+                alertDiv.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${data.message}`;
+            } else {
+                alertDiv.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>Произошла ошибка при отправке заявки`;
+            }
+            
+            form.insertBefore(alertDiv, form.firstChild);
+            
+            // Включаем кнопку отправки обратно
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Отправить заявку';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Включаем кнопку отправки обратно
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Отправить заявку';
+        
+        // Показываем сообщение об ошибке
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-danger';
+        alertDiv.innerHTML = `
+            <i class="fas fa-exclamation-circle me-2"></i>Произошла ошибка при отправке заявки
+        `;
+        form.insertBefore(alertDiv, form.firstChild);
+    });
+    
+    return false;
+}
+</script>
+{% endblock %}
+{% endblock %}

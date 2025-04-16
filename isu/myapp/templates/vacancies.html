@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}Вакансии{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Вакансии</h1>
+        {% if user.is_authenticated %}
+            {% for role in user.profile.roles.all %}
+                {% if role.name == 'Работодатель' %}
+                    <a href="{% url 'create_vacancy' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Создать вакансию
+                    </a>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Сообщения -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        {% for vacancy in vacancies %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">{{ vacancy.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{{ vacancy.company }}</h6>
+                    <p class="card-text"><strong>Местоположение:</strong> {{ vacancy.location }}</p>
+                    {% if vacancy.salary %}
+                    <p class="card-text"><strong>Зарплата:</strong> {{ vacancy.salary }}</p>
+                    {% endif %}
+                    <p class="card-text"><strong>Описание:</strong></p>
+                    <p class="card-text">{{ vacancy.description|truncatewords:30 }}</p>
+                    <p class="card-text"><strong>Требования:</strong></p>
+                    <p class="card-text">{{ vacancy.requirements|truncatewords:30 }}</p>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Опубликовано: {{ vacancy.created_at|date:"d.m.Y" }}</small>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-info me-2" data-bs-toggle="modal" data-bs-target="#vacancyModal{{ vacancy.id }}">
+                                <i class="bi bi-info-circle me-1"></i>Подробнее
+                            </button>
+                            {% if user.is_authenticated and vacancy.created_by != user %}
+                                {% if vacancy.id not in user_responses %}
+                                    <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#responseModal{{ vacancy.id }}">
+                                        <i class="bi bi-send me-1"></i>Откликнуться
+                                    </button>
+                                {% else %}
+                                    <button type="button" class="btn btn-sm btn-secondary" disabled>
+                                        <i class="bi bi-check-circle me-1"></i>Вы откликнулись
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно с подробной информацией -->
+        <div class="modal fade" id="vacancyModal{{ vacancy.id }}" tabindex="-1" aria-labelledby="vacancyModalLabel{{ vacancy.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="vacancyModalLabel{{ vacancy.id }}">{{ vacancy.title }}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h6 class="text-muted mb-3">{{ vacancy.company }}</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p><strong>Местоположение:</strong> {{ vacancy.location }}</p>
+                                {% if vacancy.salary %}
+                                <p><strong>Зарплата:</strong> {{ vacancy.salary }}</p>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Опубликовано:</strong> {{ vacancy.created_at|date:"d.m.Y" }}</p>
+                                <p><strong>Обновлено:</strong> {{ vacancy.updated_at|date:"d.m.Y" }}</p>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <h6>Описание:</h6>
+                            <p>{{ vacancy.description }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <h6>Требования:</h6>
+                            <p>{{ vacancy.requirements }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <h6>Контактная информация:</h6>
+                            <p>{{ vacancy.contact_info }}</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        {% if user.is_authenticated and vacancy.created_by != user %}
+                            {% if vacancy.id not in user_responses %}
+                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#responseModal{{ vacancy.id }}" data-bs-dismiss="modal">
+                                    <i class="bi bi-send me-1"></i>Откликнуться
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-secondary" disabled>
+                                    <i class="bi bi-check-circle me-1"></i>Вы откликнулись
+                                </button>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно для отклика на вакансию -->
+        {% if user.is_authenticated and vacancy.created_by != user %}
+        <div class="modal fade" id="responseModal{{ vacancy.id }}" tabindex="-1" aria-labelledby="responseModalLabel{{ vacancy.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title" id="responseModalLabel{{ vacancy.id }}">Отклик на вакансию "{{ vacancy.title }}"</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="post" action="{% url 'respond_to_vacancy' vacancy.id %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="message{{ vacancy.id }}" class="form-label">Сопроводительное письмо</label>
+                                <textarea class="form-control" id="message{{ vacancy.id }}" name="message" rows="5" required placeholder="Расскажите, почему вы подходите на эту должность и почему хотите работать в этой компании..."></textarea>
+                                <div class="form-text">Опишите ваш опыт и навыки, которые могут быть полезны для этой вакансии.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="resume{{ vacancy.id }}" class="form-label">Резюме (необязательно)</label>
+                                <input class="form-control" type="file" id="resume{{ vacancy.id }}" name="resume" accept=".pdf,.doc,.docx">
+                                <div class="form-text">Загрузите ваше резюме в формате PDF, DOC или DOCX.</div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-send me-1"></i>Отправить отклик
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>На данный момент нет активных вакансий.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 
