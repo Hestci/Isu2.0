@@ -38,12 +38,12 @@ cd isu2.0
 docker compose up --build -d
 ```
 3. Создайте начальные роли:
-```
+```bash
 docker compose exec web python manage.py create_initial_roles
 ```
 
 Результат выполнения команды:
-```
+```bash
 Successfully created role admin
 Successfully created role student
 Successfully created role Работодатель
@@ -52,12 +52,12 @@ Successfully created role guest
 ```
 
 4. Создайте необходимые директории для хранения файлов:
-```
+```bash
 docker compose exec web mkdir -p media/applications
 docker compose exec web chmod 777 media/applications
 ```
 5. Примените миграции для создания таблиц в базе данных:
-```
+```bash
 docker compose exec web python manage.py makemigrations
 docker compose exec web python manage.py migrate
 ```
